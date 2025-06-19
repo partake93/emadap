@@ -1,0 +1,14 @@
+{
+    "multiple_rows_with_total_records": {
+        "type": "multiple_rows",
+        "multiple_rows": {
+            "rows": [
+                {
+                    "row": 1,
+                    "expected_keywords": ["total number of records"],
+                    "extraction_type": "expected_count" 
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,45 @@
+{
+    "multiple_rows_with_count_and_month": {
+        "type": "multiple_rows",
+        "multiple_rows": {
+            "rows": [
+                {
+                    "row": 1,
+                    "expected_keywords": ["no of records"],
+                    "extraction_type": "expected_count" 
+                },
+                {
+                    "row": 2,
+                    "expected_keywords": ["As of Month"],
+                    "include_in_dataframe": "as_of_month",
+                    "extraction_type": "data" 
+                }
+            ]
+        }
+    },
+    "multiple_rows_with_total_records": {
+        "type": "multiple_rows",
+        "multiple_rows": {
+            "rows": [
+                {
+                    "row": 1,
+                    "expected_keywords": ["total number of records"],
+                    "extraction_type": "expected_count" 
+                }
+            ]
+        }
+    },
+    "single_row_metadata_extraction": {
+        "type": "single_row",
+        "single_row": {
+            "row": 1,
+            "mapping": {
+                "source_name": 0,
+                "data_month": 1,
+                "expected_count": 2,
+                "generation_date": 3
+            },
+            "include_in_dataframe": ["data_month"]
+        }
+    }
+}

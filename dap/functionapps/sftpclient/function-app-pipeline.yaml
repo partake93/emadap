@@ -1,0 +1,105 @@
+trigger:
+  branches:
+    include:
+      - test
+
+variables:
+  azureServiceConnection: 'Azure Sandbox connection'
+  functionAppPackage: '$(System.DefaultWorkingDirectory)/functionapp.zip'
+  workingDir: '$(System.DefaultWorkingDirectory)/dap/functionapps/sftpclient'
+
+stages:
+- stage: Build
+  displayName: 'Build Python Function App'
+  jobs:
+  - job: SonarQube
+    displayName: "Run SonarQube Analysis"
+    steps:
+      - checkout: self
+        displayName: "Checkout Code"
+        persistCredentials: true
+        fetchDepth: 0 
+      - task: SonarQubePrepare@7
+        displayName: "Prepare SonarQube Scanner"
+        inputs:
+          SonarQube: "Sonarqube"
+          scannerMode: "CLI"
+          configMode: "manual"
+          cliProjectKey: "ema-dap"
+          cliProjectName: "ema-dap"
+          cliSources: "$(Build.SourcesDirectory)"
+      - task: SonarQubeAnalyze@7
+        displayName: "Run SonarQube Analysis"
+      - task: SonarQubePublish@7
+        displayName: "Publish SonarQube Results"
+        inputs:
+                pollingTimeoutSec: '300'
+  - job: BuildJob
+    pool:
+      vmImage: 'ubuntu-22.04'
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.11'
+
+    - script: |
+        cd $(workingDir)
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt -t .python_packages/lib/site-packages
+      displayName: 'Install Python dependencies'
+
+    - task: ArchiveFiles@2
+      inputs:
+        rootFolderOrFile: '$(workingDir)'
+        includeRootFolder: false
+        archiveType: 'zip'
+        archiveFile: '$(functionAppPackage)'
+        replaceExistingArchive: true
+
+    - publish: $(functionAppPackage)
+      artifact: drop
+
+# --------- Deploy to Dev ---------
+- stage: Deploy_Dev
+  displayName: 'Deploy to Dev'
+  dependsOn: Build
+  variables:
+    functionAppName: 'Function-App-Timer-Trigger'
+  jobs:
+  - deployment: DeployDev
+    environment: 'Dev'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: drop
+
+          - task: AzureFunctionApp@1
+            inputs:
+              azureSubscription: '$(azureServiceConnection)'
+              appType: 'functionApp'
+              appName: '$(functionAppName)'
+              package: '$(Pipeline.Workspace)/drop/functionapp.zip'
+# --------- Deploy to SIT ---------		
+- stage: Deploy_SIT
+  displayName: 'Deploy to SIT'
+  dependsOn: Build
+  variables:
+    functionAppName: 'SIT-Function-App-Timer-Trigger'
+  jobs:
+  - deployment: DeploySIT
+    environment: 'SIT'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: drop
+
+          - task: AzureFunctionApp@1
+            inputs:
+              azureSubscription: '$(azureServiceConnection)'
+              appType: 'functionApp'
+              appName: '$(functionAppName)'
+              package: '$(Pipeline.Workspace)/drop/functionapp.zip'
