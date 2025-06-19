@@ -1,0 +1,39 @@
+# ignore ALL .bak files
+*.bak
+
+# ignore ALL .bat files
+*.bat
+
+# ignore ALL temporary log files
+# (if generated, albeit temporarily, during local testing)
+*.log
+*.log.txt
+*-log.txt
+*-log.txt.20*
+
+# Folders to be ignored
+# (if generated, albeit temporarily, during local testing)
+__pycache__/
+**/build/**
+.vscode/
+**/node_modules/**
+**/webapp-react/build/**
+
+# Other files
+*.bak
+*.bat
+*.code-workspace
+*- Copy*.*
+*.env
+*.ipynb
+*.WinMerge
+*.zip
+
+# Temporary (generated files)
+**/*-unit-test-report*.html
+
+# Temporary (reference files)
+*- Copy
+*- Copy.*
+*- Copy (*).*
+**/*Sprint*.sql
